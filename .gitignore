@@ -5,4 +5,3 @@ node_modules/
 logs
 npm-debug.log*
 # Runtime data
-package-lock.json
