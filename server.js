@@ -314,7 +314,7 @@ async function startServer() {
             const currentShowDate = new Date();
             // check if lastTimeShown is more than 6 minutes ago
             const sixMinutesAgo = new Date(
-              currentShowDate.getTime() - 1 * 60 * 1000
+              currentShowDate.getTime() - 6 * 60 * 1000
             );
             if (lastTimeShown < sixMinutesAgo) {
               // make lastTimeShown the current date
