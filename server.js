@@ -2,7 +2,7 @@ const app = require("./index");
 moment = require("moment-timezone");
 
 const jwt = require("jsonwebtoken");
-// const fetch = require("node-fetch");
+const { chromium } = require("playwright");
 const tough = require("tough-cookie");
 const fetchCookie = require("fetch-cookie").default || require("fetch-cookie");
 const cheerio = require("cheerio");
@@ -173,71 +173,117 @@ async function startServer() {
     } catch (err) {
       console.error("❌ Error during login flow:", err);
     }
-    async function fetchAppointmentPage(
-      tlsCookies,
-      osano_consentmanager_uuid,
-      osano_consentmanager,
-      datadome,
-      cf_clearance,
-      _dd_s
-    ) {
+    const axios = require("axios");
+
+    // async function fetchAppointmentPage(
+    //   tlsCookies,
+    //   osano_consentmanager_uuid,
+    //   osano_consentmanager,
+    //   datadome,
+    //   cf_clearance,
+    //   _dd_s
+    // ) {
+    //   try {
+    //     const res = await axios.get(
+    //       "https://visas-de.tlscontact.com/en-us/3257211/workflow/appointment-booking?location=gbMNC2de",
+    //       {
+    //         timeout: 5000,
+    //         headers: {
+    //           accept: "*/*",
+    //           "accept-language": "en-US,en;q=0.9",
+    //           "user-agent":
+    //             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    //           referer:
+    //             "https://visas-de.tlscontact.com/en-us/3257211/workflow/appointment-booking?location=gbMNC2de",
+    //           cookie: generateCookieHeader(
+    //             tlsCookies,
+    //             osano_consentmanager_uuid,
+    //             osano_consentmanager,
+    //             datadome,
+    //             cf_clearance,
+    //             _dd_s
+    //           ),
+    //         },
+    //       }
+    //     );
+
+    //     const html = res.data;
+    //     console.log("Fetched appointment page successfully.");
+    //     return html;
+    //   } catch (err) {
+    //     console.error("Error fetching appointment page:", err);
+    //     return null;
+    //   }
+    // }
+
+    // function generateCookieHeader(
+    //   tlsCookies,
+    //   osanoUuid,
+    //   osanoConsent,
+    //   datadome,
+    //   cfClearance,
+    //   dd_s
+    // ) {
+    //   const parts = [];
+    //   if (osanoUuid) parts.push(`osano_consentmanager_uuid=${osanoUuid}`);
+    //   if (osanoConsent) parts.push(`osano_consentmanager=${osanoConsent}`);
+    //   if (datadome) parts.push(`datadome=${datadome}`);
+    //   if (cfClearance) parts.push(`cf_clearance=${cfClearance}`);
+    //   if (tlsCookies.tls_auth) parts.push(`tls_auth=${tlsCookies.tls_auth}`);
+    //   if (tlsCookies.tls_id) parts.push(`tls_id=${tlsCookies.tls_id}`);
+    //   if (tlsCookies.tls_refresh_token)
+    //     parts.push(`tls_refresh_token=${tlsCookies.tls_refresh_token}`);
+    //   if (dd_s) parts.push(`_dd_s=${dd_s}`);
+    //   return parts.join("; ");
+    // }
+
+    async function fetchAppointmentPageWithPlaywright(tlsCookies) {
+      const browser = await chromium.launch({ headless: true }); // or false for debugging
+      const context = await browser.newContext();
+
+      // Manually set cookies from tlsCookies into browser context
+      const cookies = [];
+      for (const [name, value] of Object.entries(tlsCookies)) {
+        if (value) {
+          cookies.push({
+            name,
+            value,
+            domain: "visas-de.tlscontact.com",
+            path: "/",
+            httpOnly: false,
+            secure: true,
+            sameSite: "Lax",
+          });
+        }
+      }
+
+      await context.addCookies(cookies);
+      const page = await context.newPage();
+
       try {
-        const res = await fetch(
-          "https://visas-de.tlscontact.com/en-us/3257211/workflow/appointment-booking?location=gbMNC2de&_rsc=16csd",
+        await page.setExtraHTTPHeaders({
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          "Accept-Language": "en-US,en;q=0.9",
+        });
+        await page.goto(
+          "https://visas-de.tlscontact.com/en-us/3257211/workflow/appointment-booking?location=gbMNC2de",
           {
-            method: "GET",
-            headers: {
-              accept: "*/*",
-              "accept-language": "en-US,en;q=0.9",
-              referer:
-                "https://visas-de.tlscontact.com/en-us/3257211/workflow/service-level",
-              cookie: generateCookieHeader(
-                tlsCookies,
-                osano_consentmanager_uuid,
-                osano_consentmanager,
-                datadome,
-                cf_clearance,
-                _dd_s
-              ),
-            },
+            waitUntil: "domcontentloaded",
+            timeout: 15000,
           }
         );
 
-        if (!res.ok) {
-          throw new Error(`Fetch failed with status ${res.status}`);
-        }
-
-        const html = await res.text();
-        console.log("Fetched appointment page successfully.");
-        return html;
+        const content = await page.content(); // full HTML of page
+        console.log("✅ Fetched appointment page with Playwright");
+        await browser.close();
+        return content;
       } catch (err) {
-        console.error("Error fetching appointment page:", err);
+        console.error("❌ Playwright fetch error:", err);
+        await browser.close();
         return null;
       }
     }
-    function generateCookieHeader(
-      tlsCookies,
-      osanoUuid,
-      osanoConsent,
-      datadome,
-      cfClearance,
-      dd_s
-    ) {
-      const parts = [];
-      if (osanoUuid) parts.push(`osano_consentmanager_uuid=${osanoUuid}`);
-      if (osanoConsent) parts.push(`osano_consentmanager=${osanoConsent}`);
-      if (datadome) parts.push(`datadome=${datadome}`);
-      if (cfClearance) parts.push(`cf_clearance=${cfClearance}`);
-      if (tlsCookies.tls_auth) parts.push(`tls_auth=${tlsCookies.tls_auth}`);
-      if (tlsCookies.tls_id) parts.push(`tls_id=${tlsCookies.tls_id}`);
-      if (tlsCookies.tls_refresh_token)
-        parts.push(`tls_refresh_token=${tlsCookies.tls_refresh_token}`);
-      if (dd_s) parts.push(`_dd_s=${dd_s}`);
-      return parts.join("; ");
-    }
-
-    //  use telegram bot to send the html
-   
 
     while (true) {
       // Check if the token is close to expiry and refresh if needed
@@ -268,18 +314,25 @@ async function startServer() {
             const currentShowDate = new Date();
             // check if lastTimeShown is more than 6 minutes ago
             const sixMinutesAgo = new Date(
-              currentShowDate.getTime() - 6 * 60 * 1000
+              currentShowDate.getTime() - 1 * 60 * 1000
             );
             if (lastTimeShown < sixMinutesAgo) {
               // make lastTimeShown the current date
               lastTimeShown = currentShowDate;
-              const html = await fetchAppointmentPage(
-                tlsCookies,
-                osano_consentmanager_uuid,
-                osano_consentmanager,
-                datadome,
-                cf_clearance,
-                _dd_s
+              const html = await fetchAppointmentPageWithPlaywright(
+                {
+                  ...tlsCookies,
+                  osano_consentmanager_uuid: osano_consentmanager_uuid,
+                  osano_consentmanager: osano_consentmanager,
+                  datadome: datadome,
+                  cf_clearance: cf_clearance,
+                  _dd_s: _dd_s,
+                }
+                // osano_consentmanager_uuid,
+                // osano_consentmanager,
+                // datadome,
+                // cf_clearance,
+                // _dd_s
               );
 
               if (html) {
