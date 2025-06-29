@@ -1,7 +1,7 @@
 {
-  "name": "poim-ad-service-config",
+  "name": "uk-de-appointment",
   "version": "1.0.0",
-  "description": "This is the backend of the poim-ad-service-configuration written in Nodejs",
+  "description": "This is the backend of the uk-de-appointmenturation written in Nodejs",
   "main": "index.js",
   "dependencies": {
     "axios": "^1.10.0",
@@ -39,15 +39,6 @@
     "type": "git",
     "url": "git+https://github.com/adelaadeoye/appointment.git"
   },
-  "keywords": [
-    "poim",
-    "configuration",
-    "model",
-    "vehicle",
-    "class",
-    "engine",
-    "type"
-  ],
   "author": "Adela",
   "license": "MIT",
   "homepage": "https://github.com/adelaadeoye/appointment",
