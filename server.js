@@ -350,14 +350,29 @@ async function startServer() {
                     .then(() => {
                       console.log("Bot sent Message ");
                     });
-                } else {
+                } else if (
+                  html.includes(
+                    `"<h1 data-translate="block_headline">Sorry, you have been blocked</h1>"`||html.includes(`<title>Attention Required! | Cloudflare</title>`)
+                  )
+                ) {
                   bot
                     .sendMessage(
                       chatId,
-                      `New appointment available, check it out!🎉🎉🎉🎉🎉`
+                      "👹The request was blocked by Cloudflare. I will try again later.👹"
                     )
                     .then(() => {
-                      console.log("Bot sent Message  for date success",html);
+                      console.log("Bot sent Message for Cloudflare block");
+                    });
+                }
+                else {
+                  bot
+                    .sendMessage(
+                      chatId,
+                      `There may be available date, check it out!🎉🎉🎉🎉🎉`
+                    )
+                    .then(() => {
+                      console.log("Bot sent Message  for date success"
+                      );
                     });
                 }
               } else {
