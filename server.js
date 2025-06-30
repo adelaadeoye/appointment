@@ -352,7 +352,14 @@ async function startServer() {
                     });
                 } else if (
                   html.includes(
-                    `"<h1 data-translate="block_headline">Sorry, you have been blocked</h1>"`||html.includes(`<title>Attention Required! | Cloudflare</title>`)
+                    `"<h1 data-translate="block_headline">Sorry, you have been blocked</h1>"` ||
+                      html.includes(
+                        `<title>Attention Required! | Cloudflare</title>`
+                      ) ||
+                      html.includes("Sorry, you have been blocked")||html.includes(
+                        "Access denied | Cloudflare"  ) ||
+                      html.includes(
+                        "you have been blocked")
                   )
                 ) {
                   bot
@@ -363,16 +370,14 @@ async function startServer() {
                     .then(() => {
                       console.log("Bot sent Message for Cloudflare block");
                     });
-                }
-                else {
+                } else {
                   bot
                     .sendMessage(
                       chatId,
                       `There may be available date, check it out!🎉🎉🎉🎉🎉`
                     )
                     .then(() => {
-                      console.log("Bot sent Message  for date success",html
-                      );
+                      console.log("Bot sent Message  for date success", html);
                     });
                 }
               } else {
