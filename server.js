@@ -357,7 +357,7 @@ async function startServer() {
                       `New appointment available, check it out!🎉🎉🎉🎉🎉`
                     )
                     .then(() => {
-                      console.log("Bot sent Message ");
+                      console.log("Bot sent Message  for date success",html);
                     });
                 }
               } else {
