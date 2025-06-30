@@ -371,7 +371,7 @@ async function startServer() {
                       `There may be available date, check it out!🎉🎉🎉🎉🎉`
                     )
                     .then(() => {
-                      console.log("Bot sent Message  for date success"
+                      console.log("Bot sent Message  for date success",html
                       );
                     });
                 }
